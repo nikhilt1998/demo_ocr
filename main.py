@@ -10,6 +10,8 @@ from states import CG,UP,bih,Maha,ap,WB,cbse
 from ner import test_model
 from pathlib import Path
 import re
+import jsonify
+
 from fastapi import FastAPI, File, UploadFile
 app = FastAPI()
 
@@ -20,7 +22,6 @@ import shutil
 model = ocr_predictor(pretrained=True)
 
 def step1(img_path):
-    # img_path = "/content/images_final/AP/Copy of 8.png"
     doc = DocumentFile.from_images(img_path)
     result = model(doc)
     # result.show(doc)
@@ -104,48 +105,80 @@ def json_output(board_name,entitiess,img_path):
 
 
 
+js_data = {}
 
 @app.post("/upload")
 async def upload(uploaded_file: List[UploadFile] = File(...)): 
+    global js_data
+
     for img in uploaded_file:
         file_location = f"uploaded/{img.filename}"
         with open(file_location, "wb") as file_object:
             shutil.copyfileobj(img.file, file_object)  
-        #create json
-        # update status:not processed
-      
-    return {"return":"ok","status":"Non-processed"}
+
+        id_name = img.filename[:-4]
+        js_data[id_name] = "Not Processed"
+    
+    json_str = json.dumps(js_data)
+
+
+    # print(js_data)
+
+    return json_str
 
 @app.get("/fileinfo")
 async def fileinfo(fileid):
-    pass
+    global js_data
+    print(js_data)
+    j_str = js_data[fileid]
+
+    return j_str
+
     # no param
     # return name ,status of the files
     # return an array with this details above 
 
 @app.get("/filedetails")
 async def fileDetails(fileid):
-  path = 'details/'+str(fileid) + '.json'
-  if os.path.exists(path):
-    print(path)
-    return json.load(path)
+    json_res = ''
+    path = 'C:\\Users\\Nikhil\\Desktop\\final_demo\\details'
+    filename = str(fileid) + '.json'
+    for filename in glob.glob(os.path.join(path, filename)):
+        with open(os.path.join(os.getcwd(), filename), 'r') as data_file: 
+            data = json.load(data_file)
+            json_res = data
+    
+    global js_data
+    js_data[fileid] = "Processing"
 
+    return json_res
 
-@app.get("/filedetails")
-async def fileinfo(fileid):
-    pass
-
-
+@app.post("/processed")
+async def process_image(fileid):
+    global js_data
+    js_data[fileid] = "Processed"
+    return 'final_demo\\' + str(fileid) + '.png'
+    
 
 
 @app.post("/")
-async def root(file: UploadFile = File(...)):
-    img_path = file.filename
-    res = step1(img_path)
-    total_text = step2(res)
-    ent = test_model(total_text)
-    board_name = classification(ent)
-    json_string = json_output(board_name,ent,img_path)
-    # print(json_string)
-    return json_string
+async def root():
+    
+    lst = []    
+    file = 'C:\\Users\\Nikhil\\Desktop\\final_demo\\uploaded'
+    for filename in os.listdir(file):
+        if filename.endswith(".png"):
+            res = step1(filename)
+            total_text = step2(res)
+            ent = test_model(total_text)
+            board_name = classification(ent)
+            json_string = json_output(board_name,ent,filename)
+            lst.append(json_string)
+            fileid = filename[:-4]
+
+            global js_data
+            js_data[fileid] = "Processing"
+
+
+    return lst
 
