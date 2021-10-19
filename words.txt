@@ -1,0 +1,23 @@
+A.P.
+Board,intermediate,education,vidya,bhawan,nempally,pass,certificate,cum,memorandum,marks,subject,
+english,sanskrit,mathematics-A,mathematics-B,physics,chemistry,physics,practical,chemistry,environmental,education,maximum,secured,year
+
+
+U.P.
+high,school,examination,regular,full,exam,hindi,english,mathematics,science,social,drawing,passed,allahabad,uttar,pradesh,civics,design,sociology,sport,phy,edu,humanities,general,computer,book,keep,acct,busi,org,crpnd,banking
+
+
+ICSE
+council,indian,school,new,delhi,secondary,class-X,class,history,geography,applications,bengali
+
+Bihar
+bihar,patna,N.R.B,M.B-ALT ENGLISH,L.L ENGLISH,physics,chemistry,biology,business,studies,entrepreneurship,accountancy,additional,darbhanga,commerce,annual
+
+Karnataka
+subjects,kannada,first,language,second,third,hindi,bangalore,north
+
+Maharastra
+urdu,history,political,sociology,pune,higher,mumbai,division,name,sunject code,figures,medium,words,obtained,marathi,main
+
+Kerala
+government,kerala,higher,theory,part I,part II,part III,registration,number,thiruvanantpuram,five,one,nine,three,four,seven,min,max,malayalam,functional,management,costing,economics,class,XII
