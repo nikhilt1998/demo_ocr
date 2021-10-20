@@ -1,0 +1,38 @@
+{
+  "BOARD": "Bihar",
+  "LEVEL": "INTERMEDIATE",
+  "subjects": {
+    "N.R.B.": [
+      "043",
+      "043"
+    ],
+    "M.B.ALT. ENGLISH": [
+      "022",
+      "022"
+    ],
+    "LL. ENGLISH": [
+      "080",
+      "080"
+    ],
+    "PHYSICS": [
+      "047",
+      "028",
+      "075"
+    ],
+    "CHEMISTRY": [
+      "034",
+      "028",
+      "062"
+    ],
+    "BIOLOGY": [
+      "038",
+      "027",
+      "065"
+    ],
+    "MATHEMATICS": [
+      "058",
+      "058"
+    ]
+  },
+  "TOTAL_MARKS": "347"
+}
