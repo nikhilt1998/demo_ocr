@@ -11,30 +11,27 @@ from ner import test_model
 from pathlib import Path
 import re
 import jsonify
-
-import asyncio
 import msgpack
-import aioredis
+from redis import Redis
 
 model = ocr_predictor(pretrained=True)
 default_dict={"Status":"Processing","Details":{}}
-redis = aioredis.from_url("redis://localhost")
-async def set_dict_redis(key,dictionary):
-    
-    await redis.set(key, msgpack.packb(dictionary))
-    return 0
-async def get_dict_redis(key):
-    value = await redis.get(key)
+redis = Redis(host="redis")
+def set_dict_redis(key,dictionary):
+    redis.set(key, msgpack.packb(dictionary))
+def get_dict_redis(key):
+    value = redis.get(key)
     return (msgpack.unpackb(value))
 
-
+def temp(something):
+    return something
 
 def step1(img_path):
     doc = DocumentFile.from_images(img_path)
     result = model(doc)
     fig = visualize_page(result.pages[0].export(), doc[0], interactive=False)
     l = img_path.split("/")[-1]
-    # print(l)
+    print(l)
     file_location = "processed/"+l
     fig.savefig(file_location)
     return result
@@ -110,7 +107,7 @@ def json_output(board_name,entitiess,img_path):
 
 def pipeline(filename):
     key=filename.split(".")[0]
-    asyncio.run(set_dict_redis(key,default_dict))  
+    set_dict_redis(key,default_dict)  
     file = r'uploaded'
     res = step1("uploaded/"+filename)
 
@@ -121,10 +118,19 @@ def pipeline(filename):
     new_dict={}
     new_dict["Details"]=json_data
     new_dict["Status"]="Processed"
-    asyncio.run(set_dict_redis(key,new_dict))
-pipeline("c1.png")
+    set_dict_redis(key,new_dict)
+    return filename
+
+# def sync_pipeline(filename):
+#     asyncio.run(pipeline(filename))
+#     return filename
+# pipeline("c2.png")
+# print("ran")
 # async def readback(key):
-#     redis = aioredis.from_url("redis://localhost")
 #     value = await redis.get(key)
 #     print((msgpack.unpackb(value)))
-# asyncio.run(readback("c1"))
+# asyncio.run(readback("c2"))
+
+# if __name__ == "__main__":
+#     sync_pipeline("copy.png")
+#     asyncio.run(readback("copy"))
