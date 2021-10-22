@@ -47,6 +47,11 @@ async def fileDetails(fileid):
 async def process_image(fileid):
     response = FileResponse(path='processed/'+fileid+".png",media_type="image/png")
     return response
+
+@app.post("/thumbnail")
+async def thumbnail_image(fileid):
+    response = FileResponse(path='uploaded/'+fileid+".png",media_type="image/png")
+    return response
     
 
 if __name__ == "__main__":
