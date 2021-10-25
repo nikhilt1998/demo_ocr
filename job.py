@@ -6,7 +6,7 @@ from doctr.models import ocr_predictor
 import json
 import re
 from spell_checker import correction
-from states import CG,UP,bih,Maha,ap,WB,cbse
+from states import CG,UP,bih,Maha,ap,WB,cbse,ICSE
 from ner import test_model
 from pathlib import Path
 import re
@@ -72,7 +72,7 @@ def classification(entitiess):
        'Uttar': 'UP',
        'Uttar Pradesh':'UP',
        'Pradesh Uttar': 'UP',
-       'COUNCIL FOR THE INDIAN SCHOOL': 'ICSE',
+       'COUNCIL': 'ICSE',
        'CENTRAL': 'CBSE',
        'CENTRAL SECONDARY BOARD': 'CBSE',
        'KERALA' : 'KERALA',
@@ -83,6 +83,7 @@ def classification(entitiess):
        'PATNA': 'BIHAR',
        'CHHATTISGARH': 'CHHATTISGARH',
        }
+
     
     board_name = ''
     for en in entitiess:
@@ -99,7 +100,8 @@ def json_output(board_name,entitiess,img_path):
     'BIHAR': bih,
     'CHHATTISGARH': CG,
     'West Bengal': WB,
-    'CBSE': cbse
+    'CBSE': cbse,
+    'ICSE': ICSE
     }
 
     json_data = funCall[board_name](entitiess)
@@ -121,16 +123,3 @@ def pipeline(filename):
     set_dict_redis(key,new_dict)
     return filename
 
-# def sync_pipeline(filename):
-#     asyncio.run(pipeline(filename))
-#     return filename
-# pipeline("c2.png")
-# print("ran")
-# async def readback(key):
-#     value = await redis.get(key)
-#     print((msgpack.unpackb(value)))
-# asyncio.run(readback("c2"))
-
-# if __name__ == "__main__":
-#     sync_pipeline("copy.png")
-#     asyncio.run(readback("copy"))
