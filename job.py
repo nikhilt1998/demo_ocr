@@ -64,7 +64,35 @@ def step2(result):
     return total_text
 
 
-def classification(entitiess):
+
+def step2(result):
+    json_output = result.export()
+    num_words = len(json_output['pages'][0]['blocks'][0]['lines'][0]['words'])
+    # checkConfidence = False
+    words_list = []
+    words_dic = json_output['pages'][0]['blocks'][0]['lines'][0]['words']
+
+
+    for word in range(num_words):
+        res = words_dic[word]['value']
+        if not res.isdigit() and (words_dic[word]['confidence'] < 0.2):
+            correct_word = correction(res.lower())
+            # res = correct_word
+            if(correct_word == 'lest'):
+                res = 'West'
+            if correct_word == res.lower() and len(correct_word)>1:
+                res = ''
+        words_list.append(res)
+
+    total_text = ' '.join(words_list)
+
+    punc = [')', '-', ':', '(', '$', '&']
+    for p in punc:
+        total_text = total_text.replace(p,"")
+
+    return total_text
+
+def stateClassification(entitiess):
     classify = {'MUMBAI': 'maharastra',
        'State': 'maharastra',
        'State of Secondary and Board Higher Pune': 'maharastra',
@@ -83,7 +111,6 @@ def classification(entitiess):
        'PATNA': 'BIHAR',
        'CHHATTISGARH': 'CHHATTISGARH',
        }
-
     
     board_name = ''
     for en in entitiess:
@@ -92,7 +119,7 @@ def classification(entitiess):
             return board_name
 
 
-def json_output(board_name,entitiess,img_path):
+def json_output_board(board_name,entitiess,img_path):
     funCall = {
     'maharastra': Maha,
     'Andhra Pradesh': ap,
@@ -107,16 +134,49 @@ def json_output(board_name,entitiess,img_path):
     json_data = funCall[board_name](entitiess)
     return json_data
 
+
+
+def isUniversityCertificate(result):
+    export = result.export()
+    num_words = len(export['pages'][0]['blocks'][0]['lines'][0]['words'])
+    # checkConfidence = False
+    words_list = []
+    words_dic = export['pages'][0]['blocks'][0]['lines'][0]['words']
+    
+    for word in range(num_words):
+        res = words_dic[word]['value']
+        if not res.isdigit() and (words_dic[word]['confidence'] < 0.2):
+            correct_word = correction(res.lower())
+            # res = correct_word
+            if(correct_word == 'lest'):
+                res = 'West'
+            if correct_word == res.lower() and len(correct_word)>1:
+                res = ''
+        words_list.append(res)
+
+    key_words = ['university', 'engineering', 'management', 'sgpa']
+
+    for key in key_words:
+        if key in words_list:
+            return True
+    return False
+    
+
 def pipeline(filename):
     key=filename.split(".")[0]
     set_dict_redis(key,default_dict)  
     file = r'uploaded'
     res = step1("uploaded/"+filename)
 
-    total_text = step2(res)
-    ent = test_model(total_text)
-    board_name = classification(ent)
-    json_data = json_output(board_name,ent,filename)
+    if(isUniversityCertificate(res)):
+        #university
+        temp = 0
+    else:
+        total_text = step2(res)
+        ent = test_model(total_text)
+        board_name = stateClassification(ent)
+
+        json_data = json_output_board(board_name,ent,filename)
     new_dict={}
     new_dict["Details"]=json_data
     new_dict["Status"]="Processed"
