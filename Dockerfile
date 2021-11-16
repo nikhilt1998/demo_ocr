@@ -11,6 +11,7 @@ COPY ./states.py /app/
 COPY ./words.txt /app/
 COPY ./main.py /app/
 COPY ./start.sh /app/
+COPY ./university.py /app/
 WORKDIR '/app'
 # install dependencies, we could also use the conda env, but it is more minimal
 # we could probably find an image including this

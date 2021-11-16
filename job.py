@@ -8,6 +8,7 @@ import re
 from spell_checker import correction
 from states import CG,UP,bih,Maha,ap,WB,cbse,ICSE
 from ner import test_model
+from university import getGPA_new
 from pathlib import Path
 import re
 import jsonify
@@ -17,16 +18,19 @@ from redis import Redis
 model = ocr_predictor(pretrained=True)
 default_dict={"Status":"Processing","Details":{}}
 redis = Redis(host="redis")
+
 def set_dict_redis(key,dictionary):
     redis.set(key, msgpack.packb(dictionary))
+
 def get_dict_redis(key):
     value = redis.get(key)
     return (msgpack.unpackb(value))
 
-def temp(something):
-    return something
+# def temp(something):
+#     return something
 
 def step1(img_path):
+    print("----------------> Step 1")
     doc = DocumentFile.from_images(img_path)
     result = model(doc)
     fig = visualize_page(result.pages[0].export(), doc[0], interactive=False)
@@ -37,6 +41,7 @@ def step1(img_path):
     return result
 
 def step2(result):
+    print("----------------> Step 2")
     json_output = result.export()
     num_words = len(json_output['pages'][0]['blocks'][0]['lines'][0]['words'])
     # checkConfidence = False
@@ -64,33 +69,6 @@ def step2(result):
     return total_text
 
 
-
-def step2(result):
-    json_output = result.export()
-    num_words = len(json_output['pages'][0]['blocks'][0]['lines'][0]['words'])
-    # checkConfidence = False
-    words_list = []
-    words_dic = json_output['pages'][0]['blocks'][0]['lines'][0]['words']
-
-
-    for word in range(num_words):
-        res = words_dic[word]['value']
-        if not res.isdigit() and (words_dic[word]['confidence'] < 0.2):
-            correct_word = correction(res.lower())
-            # res = correct_word
-            if(correct_word == 'lest'):
-                res = 'West'
-            if correct_word == res.lower() and len(correct_word)>1:
-                res = ''
-        words_list.append(res)
-
-    total_text = ' '.join(words_list)
-
-    punc = [')', '-', ':', '(', '$', '&']
-    for p in punc:
-        total_text = total_text.replace(p,"")
-
-    return total_text
 
 def stateClassification(entitiess):
     classify = {'MUMBAI': 'maharastra',
@@ -163,13 +141,14 @@ def isUniversityCertificate(result):
     
 
 def pipeline(filename):
+    print("----------------> Pipeline")
     key=filename.split(".")[0]
     set_dict_redis(key,default_dict)  
     file = r'uploaded'
     res = step1("uploaded/"+filename)
 
     if(isUniversityCertificate(res)):
-        #university
+        json_data = getGPA_new(res)
         temp = 0
     else:
         total_text = step2(res)
