@@ -132,7 +132,9 @@ def isUniversityCertificate(result):
                 res = ''
         words_list.append(res)
 
-    key_words = ['university', 'engineering', 'management', 'sgpa']
+    key_words = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA']
+    
+    print(words_list)
 
     for key in key_words:
         if key in words_list:
@@ -146,16 +148,18 @@ def pipeline(filename):
     set_dict_redis(key,default_dict)  
     file = r'uploaded'
     res = step1("uploaded/"+filename)
+    
+    # print(res)
 
     if(isUniversityCertificate(res)):
         json_data = getGPA_new(res)
-        temp = 0
     else:
+        # print(res)
         total_text = step2(res)
         ent = test_model(total_text)
         board_name = stateClassification(ent)
-
         json_data = json_output_board(board_name,ent,filename)
+
     new_dict={}
     new_dict["Details"]=json_data
     new_dict["Status"]="Processed"
