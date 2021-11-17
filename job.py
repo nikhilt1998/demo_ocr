@@ -9,6 +9,8 @@ from spell_checker import correction
 from states import CG,UP,bih,Maha,ap,WB,cbse,ICSE
 from ner import test_model
 from university import getGPA_new
+from univer_spl import get_Grand_total
+from deg_cert import get_dc_details
 from pathlib import Path
 import re
 import jsonify
@@ -123,23 +125,26 @@ def isUniversityCertificate(result):
     
     for word in range(num_words):
         res = words_dic[word]['value']
-        if not res.isdigit() and (words_dic[word]['confidence'] < 0.2):
-            correct_word = correction(res.lower())
-            # res = correct_word
-            if(correct_word == 'lest'):
-                res = 'West'
-            if correct_word == res.lower() and len(correct_word)>1:
-                res = ''
         words_list.append(res)
 
-    key_words = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA']
-    
-    print(words_list)
+    keywords_university_marksheets = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA', 'UNIVERSITY', 'UNIVERSITY,BELAGAVI']
 
-    for key in key_words:
+    # print(words_list)
+
+    if "degree" in (key.lower() for key in words_list) \
+    and ("certifies" in (key.lower() for key in words_list) \
+    or "certificate" in (key.lower() for key in words_list) \
+    or 'probisional' in (key.lower() for key in words_list)):
+      return "dc"
+
+    for key in keywords_university_marksheets:
         if key in words_list:
-            return True
-    return False
+            if 'SGPA' in words_list or 'sgpa' in words_list:
+              return "uni_grades"
+            else:
+              return "uni_marks"
+
+    return "board"
     
 
 def pipeline(filename):
@@ -149,12 +154,15 @@ def pipeline(filename):
     file = r'uploaded'
     res = step1("uploaded/"+filename)
     
-    # print(res)
+    category = isUniversityCertificate(res)
 
-    if(isUniversityCertificate(res)):
+    if(category == "dc"):
+        json_data = get_dc_details(res)
+    elif(category == "uni_grades"):
         json_data = getGPA_new(res)
+    elif(category == "uni_marks"):
+        json_data = get_Grand_total(res)
     else:
-        # print(res)
         total_text = step2(res)
         ent = test_model(total_text)
         board_name = stateClassification(ent)
