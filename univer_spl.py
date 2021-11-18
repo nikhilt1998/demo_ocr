@@ -106,8 +106,9 @@ def get_Grand_total(result):
   for ent in entities:
     if ent[1] == 'UNIVER':
         if(ent[0] in 'BANGALORE UNIVERSITY'):
-            beng(text, entities)
+            docx = beng(text, entities)
         else:
-            vtu(text, entities)
+            docx = vtu(text, entities)
+  return docx
 
 

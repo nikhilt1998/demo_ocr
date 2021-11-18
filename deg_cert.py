@@ -6,8 +6,6 @@ from pathlib import Path
 
 
 
-
-
 def getLine(bboxes):
   crrt_bboxes = []
 
@@ -45,7 +43,7 @@ def get_dc_details(result):
   ]
   bboxes = words_abs_coords[0]
 
-  output_dir=Path("ner/dc")
+  output_dir=Path("ner/ner_dc")
 
 
   nlp_test = spacy.load(output_dir)
@@ -58,7 +56,7 @@ def get_dc_details(result):
   
   docx = {}
   docx['University'] = []
-  docx['Subject'] = []
+  docx['Branch'] = []
   docx['Result'] = []
   docx['USN'] = []
   for i in range(len(entities)):
