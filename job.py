@@ -129,19 +129,22 @@ def isUniversityCertificate(result):
 
     keywords_university_marksheets = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA', 'UNIVERSITY', 'UNIVERSITY,BELAGAVI']
 
-    # print(words_list)
+    print(words_list)
 
-    if "degree" in (key.lower() for key in words_list) \
-    and ("certifies" in (key.lower() for key in words_list) \
+    if ("certifies" in (key.lower() for key in words_list) \
     or "certificate" in (key.lower() for key in words_list) \
     or 'probisional' in (key.lower() for key in words_list)):
       return "dc"
 
+    flag = 0
+    sgpa_keys = ['SGPA:','SGPA','sgpa']
     for key in keywords_university_marksheets:
         if key in words_list:
-            if 'SGPA' in words_list or 'sgpa' in words_list:
-              return "uni_grades"
-            else:
+            for k in sgpa_keys:
+              if k in words_list:
+                flag = 1
+                return "uni_grades"
+            if flag == 0:
               return "uni_marks"
 
     return "board"
@@ -157,10 +160,13 @@ def pipeline(filename):
     category = isUniversityCertificate(res)
 
     if(category == "dc"):
+        print("dc")
         json_data = get_dc_details(res)
     elif(category == "uni_grades"):
+        print("uni_grades")
         json_data = getGPA_new(res)
     elif(category == "uni_marks"):
+        print("uni_marks")
         json_data = get_Grand_total(res)
     else:
         total_text = step2(res)
