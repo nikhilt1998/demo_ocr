@@ -137,4 +137,5 @@ def getGPA_new(result):
     if(key != 'Orientation'):
       grades[key] = value
 
-  return json.dumps(grades, indent=2)
+  # return json.dumps(grades)
+  return grades

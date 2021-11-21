@@ -69,7 +69,7 @@ def get_dc_details(result):
     if (entities[i][1] == 'USN'):
       docx['USN'].append(entities[i][0])
   
-  docx = json.dumps(docx, indent=2)    
+  # docx = json.dumps(docx, indent=2)    
   return docx
 
 

@@ -23,7 +23,7 @@ def beng(text, entities):
   docx['UNIVERSITY'] = ' '.join(docx['UNIVERSITY'])
   for i in range(len(subjects)):
     docx[subjects[i]] = (match[3*(i+1)-2][-1], match[3*(i+1)-1][-2])
-  docx = json.dumps(docx, indent=2)    
+  # docx = json.dumps(docx)    
   return docx
 
 
@@ -50,7 +50,7 @@ def vtu(text, entities):
         docx[subjects[i]] = (match[i][2], match[i][4], match[i][7])
       else:
         docx[subjects[i]] = (match[i][2], match[i][5], match[i][8])
-  docx = json.dumps(docx, indent=2)    
+  # docx = json.dumps(docx)    
   return docx
 
 

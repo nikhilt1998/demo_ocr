@@ -131,7 +131,8 @@ def isUniversityCertificate(result):
 
     print(words_list)
 
-    if ("certifies" in (key.lower() for key in words_list) \
+    if "degree" in (key.lower() for key in words_list) \
+    and ("certifies" in (key.lower() for key in words_list) \
     or "certificate" in (key.lower() for key in words_list) \
     or 'probisional' in (key.lower() for key in words_list)):
       return "dc"
