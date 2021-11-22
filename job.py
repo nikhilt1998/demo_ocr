@@ -28,8 +28,8 @@ def get_dict_redis(key):
     value = redis.get(key)
     return (msgpack.unpackb(value))
 
-# def temp(something):
-#     return something
+#def something():
+#    return "pass"
 
 def step1(img_path):
     print("----------------> Step 1")
@@ -129,7 +129,6 @@ def isUniversityCertificate(result):
 
     keywords_university_marksheets = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA', 'UNIVERSITY', 'UNIVERSITY,BELAGAVI']
 
-    print(words_list)
 
     if "degree" in (key.lower() for key in words_list) \
     and ("certifies" in (key.lower() for key in words_list) \

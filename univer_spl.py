@@ -11,19 +11,24 @@ def beng(text, entities):
   subjects = []
   docx = {}
   docx['UNIVERSITY'] = []
+  docx['SUBJECTS'] = []
   for ent in entities:
     if(ent[1] == 'SUBJECT'):
       subjects.append(ent[0])
     elif(ent[1] == 'TOTAL'):
-      docx['GRAND TOTAL'] = ent[0]
+      docx['GRAND_TOTAL'] = ent[0]
     elif(ent[1] == 'RESULT'):
       docx['RESULT'] = ent[0]
     elif ent[1] == 'UNIVER':
       docx['UNIVERSITY'].append(ent[0])
   docx['UNIVERSITY'] = ' '.join(docx['UNIVERSITY'])
+
   for i in range(len(subjects)):
-    docx[subjects[i]] = (match[3*(i+1)-2][-1], match[3*(i+1)-1][-2])
-  # docx = json.dumps(docx)    
+    # docx[subjects[i]] = (match[3*(i+1)-2][-1], match[3*(i+1)-1][-2])
+    dd = {}
+    dd[subjects[i]] = {'Theory': match[3*(i+1)-2][-1], 'Internal':match[3*(i+1)-1][-2]}
+    docx['SUBJECTS'].append(dd)
+  
   return docx
 
 
@@ -34,11 +39,12 @@ def vtu(text, entities):
   subjects = []
   docx = {}
   docx['UNIVERSITY'] = []
+  docx['SUBJECTS'] = []
   for ent in entities:
     if(ent[1] == 'SUBJECT'):
       subjects.append(ent[0])
     elif(ent[1] == 'TOTAL'):
-      docx['GRAND TOTAL'] = ent[0]
+      docx['GRAND_TOTAL'] = ent[0]
     elif(ent[1] == 'RESULT'):
       docx['RESULT'] = ent[0]
     elif ent[1] == 'UNIVER':
@@ -46,11 +52,13 @@ def vtu(text, entities):
   docx['UNIVERSITY'] = ' '.join(docx['UNIVERSITY'])
   if(len(subjects) == len(match)):
     for i in range(len(match)):
+      dd = {}
       if list(match[i])[-1] == '':
-        docx[subjects[i]] = (match[i][2], match[i][4], match[i][7])
+        dd[subjects[i]] = (match[i][2], match[i][4], match[i][7])
       else:
-        docx[subjects[i]] = (match[i][2], match[i][5], match[i][8])
-  # docx = json.dumps(docx)    
+        dd[subjects[i]] = (match[i][2], match[i][5], match[i][8])
+    docx['SUBJECTS'].append(dd)   
+
   return docx
 
 
