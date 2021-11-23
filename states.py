@@ -10,18 +10,20 @@ def ap(lis):
       break
   dic['subjects'] = {}
   for i in range(len(lis)):
-    l = []
+    # l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       if not re.search('PRACTICAL',lis[i][0] , re.IGNORECASE):
-        l = [int(lis[i+2][0])+int(lis[i+4][0])]
+        # l = [int(lis[i+2][0])+int(lis[i+4][0])]
+        ll['I year'] = int(lis[i+2][0])
+        ll['II year'] = int(lis[i+4][0])
       else:
-        l = [int(lis[i+2][0])]
+        ll['Final_Practical'] = int(lis[i+2][0])
       
-      dic['subjects'][lis[i][0]] = l
+      dic['subjects'][lis[i][0]] = ll
     if(lis[i][1] == 'TOTAL_VALUE'):
       dic['TOTAL_MARKS'] = lis[i][0]
   return dic
-
 
 # Bihar
 def bih(lis):
@@ -37,6 +39,7 @@ def bih(lis):
 
   for i in range(len(lis)):
     l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       j = i+1
       marks = []
@@ -48,7 +51,11 @@ def bih(lis):
       if(len(marks)>4):
         l = [marks[2], marks[3], marks[4][:3]]
 
-      dic['subjects'][lis[i][0]] = l
+      ll['Theory'] = l[0]
+      if(len(l) > 2):
+        ll['Practicals'] = l[1]
+      ll['Subject_Total'] = l[-1]
+      dic['subjects'][lis[i][0]] = ll
 
 
 
@@ -71,6 +78,7 @@ def CG(lis):
 
   for i in range(len(lis)):
     l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       j = i+1
       marks = []
@@ -82,7 +90,12 @@ def CG(lis):
       if(len(marks)>5):
         l = [marks[5], marks[6], marks[7]]
 
-      dic['subjects'][lis[i][0]] = l
+      ll['Theory'] = l[0]
+      if(len(l) > 2):
+        ll['Practicals'] = l[1]
+      ll['Subject_Total'] = l[-1]
+
+      dic['subjects'][lis[i][0]] = ll
 
 
 
@@ -105,6 +118,7 @@ def WB(lis):
 
   for i in range(len(lis)):
     l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       j = i+1
       marks = []
@@ -116,15 +130,18 @@ def WB(lis):
       
       if(lis[i][0] == 'LIFE SCIENCE'):
         l = [89, 10, 99]
-      dic['subjects'][lis[i][0]] = l
+
+      ll['Written'] = l[0]
+      ll['Internal'] = l[1]
+      ll['Subject_Total'] = l[-1]
+
+      dic['subjects'][lis[i][0]] = ll
 
 
 
     if(lis[i][1] == 'TOTAL_VALUE'):
       dic['TOTAL_MARKS'] = lis[i][0]
   return dic
-
-
 
 
 # UP
@@ -138,23 +155,37 @@ def UP(lis):
       break
 
   dic['subjects'] = {}
-
+  flag = 1
   for i in range(len(lis)):
     l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       j = i+1
       marks = []
       while(lis[j][1] == 'MARKS' or lis[j][1] == 'GRADE'):
-        marks.append(lis[j][0])
+        if (lis[j][1] != 'GRADE' and lis[j][0] != "100"):
+          marks.append(lis[j][0][:3])
         j +=1
       l = marks
       
-      if(len(marks) < 5 and len(marks) > 1):
+      if(len(marks) < 3 and len(marks) > 1 and flag):
         dic['subjects']['SOCIAL'].extend(l)
+        flag = 0
+        m = dic['subjects']['SOCIAL']
+        ll['Theory'] = m[0]
+        ll['Practicals'] = m[1]
+        ll['Subject_Total'] = m[-1]
+        dic['subjects']['SOCIAL'] = ll
+
       else:
-        dic['subjects'][lis[i][0]] = l
+        if(len(l) > 1):
+          ll['Theory'] = l[0]
+          ll['Practicals'] = l[1]
+          ll['Subject_Total'] = int(l[0]) + int(l[1]) 
 
-
+          dic['subjects'][lis[i][0]] = ll
+        else:
+          dic['subjects'][lis[i][0]] = l
 
     if(lis[i][1] == 'TOTAL_VALUE'):
       dic['TOTAL_MARKS'] = lis[i][0]
@@ -176,7 +207,7 @@ def Maha(lis):
 
   for i in range(len(lis)):
     if(lis[i][1] == 'SUBJECT'): 
-      dic['subjects'][lis[i][0]] = lis[i+1][0]
+      dic['subjects'][lis[i][0]] = {'Subject_Total' : lis[i+1][0]}
 
 
 
@@ -198,6 +229,7 @@ def cbse(lis):
 
   for i in range(len(lis)):
     l = []
+    ll = {}
     if(lis[i][1] == 'SUBJECT'): 
       j = i+1
       marks = []
@@ -205,11 +237,38 @@ def cbse(lis):
         marks.append(lis[j][0])
         j +=1
 
-      l = [marks[0], marks[1][:3]]
-      if(len(marks)>4):
-        l = [marks[2], marks[3], marks[4][:3]]
+      l = marks
+      # print(l)
+      # if(len(marks)>4):
+      #   l = [marks[2], marks[3], marks[4][:3]]
+      ll['Theory'] = l[0]
+      if(len(l) > 2):
+        ll['Practicals'] = l[-1]
+      ll['Subject_Total'] = l[1]
+      
+      dic['subjects'][lis[i][0]] = ll
 
-      dic['subjects'][lis[i][0]] = l
+
+
+    if(lis[i][1] == 'TOTAL_VALUE'):
+      dic['TOTAL_MARKS'] = lis[i][0]
+  return dic
+
+#ICSE
+def ICSE(lis):
+  dic = {}
+  dic['BOARD'] = 'ICSE'
+
+  for i in range(len(lis)):
+    if(lis[i][1] == 'LEVEL'):
+      dic['LEVEL'] = lis[i][0]
+      break
+
+  dic['subjects'] = {}
+
+  for i in range(len(lis)):
+    if(lis[i][1] == 'SUBJECT'): 
+      dic['subjects'][lis[i][0]] = {'Subject_Total' : lis[i-1][0]}
 
 
 

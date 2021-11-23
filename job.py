@@ -6,8 +6,11 @@ from doctr.models import ocr_predictor
 import json
 import re
 from spell_checker import correction
-from states import CG,UP,bih,Maha,ap,WB,cbse
+from states import CG,UP,bih,Maha,ap,WB,cbse,ICSE
 from ner import test_model
+from university import getGPA_new
+from univer_spl import get_Grand_total
+from deg_cert import get_dc_details
 from pathlib import Path
 import re
 import jsonify
@@ -17,16 +20,19 @@ from redis import Redis
 model = ocr_predictor(pretrained=True)
 default_dict={"Status":"Processing","Details":{}}
 redis = Redis(host="redis")
+
 def set_dict_redis(key,dictionary):
     redis.set(key, msgpack.packb(dictionary))
+
 def get_dict_redis(key):
     value = redis.get(key)
     return (msgpack.unpackb(value))
 
-def temp(something):
-    return something
+#def something():
+#    return "pass"
 
 def step1(img_path):
+    print("----------------> Step 1")
     doc = DocumentFile.from_images(img_path)
     result = model(doc)
     fig = visualize_page(result.pages[0].export(), doc[0], interactive=False)
@@ -37,6 +43,7 @@ def step1(img_path):
     return result
 
 def step2(result):
+    print("----------------> Step 2")
     json_output = result.export()
     num_words = len(json_output['pages'][0]['blocks'][0]['lines'][0]['words'])
     # checkConfidence = False
@@ -64,7 +71,8 @@ def step2(result):
     return total_text
 
 
-def classification(entitiess):
+
+def stateClassification(entitiess):
     classify = {'MUMBAI': 'maharastra',
        'State': 'maharastra',
        'State of Secondary and Board Higher Pune': 'maharastra',
@@ -72,7 +80,7 @@ def classification(entitiess):
        'Uttar': 'UP',
        'Uttar Pradesh':'UP',
        'Pradesh Uttar': 'UP',
-       'COUNCIL FOR THE INDIAN SCHOOL': 'ICSE',
+       'COUNCIL': 'ICSE',
        'CENTRAL': 'CBSE',
        'CENTRAL SECONDARY BOARD': 'CBSE',
        'KERALA' : 'KERALA',
@@ -91,7 +99,7 @@ def classification(entitiess):
             return board_name
 
 
-def json_output(board_name,entitiess,img_path):
+def json_output_board(board_name,entitiess,img_path):
     funCall = {
     'maharastra': Maha,
     'Andhra Pradesh': ap,
@@ -99,38 +107,76 @@ def json_output(board_name,entitiess,img_path):
     'BIHAR': bih,
     'CHHATTISGARH': CG,
     'West Bengal': WB,
-    'CBSE': cbse
+    'CBSE': cbse,
+    'ICSE': ICSE
     }
 
     json_data = funCall[board_name](entitiess)
     return json_data
 
+
+
+def isUniversityCertificate(result):
+    export = result.export()
+    num_words = len(export['pages'][0]['blocks'][0]['lines'][0]['words'])
+    # checkConfidence = False
+    words_list = []
+    words_dic = export['pages'][0]['blocks'][0]['lines'][0]['words']
+    
+    for word in range(num_words):
+        res = words_dic[word]['value']
+        words_list.append(res)
+
+    keywords_university_marksheets = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA', 'UNIVERSITY', 'UNIVERSITY,BELAGAVI']
+
+
+    if "degree" in (key.lower() for key in words_list) \
+    and ("certifies" in (key.lower() for key in words_list) \
+    or "certificate" in (key.lower() for key in words_list) \
+    or 'probisional' in (key.lower() for key in words_list)):
+      return "dc"
+
+    flag = 0
+    sgpa_keys = ['SGPA:','SGPA','sgpa']
+    for key in keywords_university_marksheets:
+        if key in words_list:
+            for k in sgpa_keys:
+              if k in words_list:
+                flag = 1
+                return "uni_grades"
+            if flag == 0:
+              return "uni_marks"
+
+    return "board"
+    
+
 def pipeline(filename):
+    print("----------------> Pipeline")
     key=filename.split(".")[0]
     set_dict_redis(key,default_dict)  
     file = r'uploaded'
     res = step1("uploaded/"+filename)
+    
+    category = isUniversityCertificate(res)
 
-    total_text = step2(res)
-    ent = test_model(total_text)
-    board_name = classification(ent)
-    json_data = json_output(board_name,ent,filename)
+    if(category == "dc"):
+        print("dc")
+        json_data = get_dc_details(res)
+    elif(category == "uni_grades"):
+        print("uni_grades")
+        json_data = getGPA_new(res)
+    elif(category == "uni_marks"):
+        print("uni_marks")
+        json_data = get_Grand_total(res)
+    else:
+        total_text = step2(res)
+        ent = test_model(total_text)
+        board_name = stateClassification(ent)
+        json_data = json_output_board(board_name,ent,filename)
+
     new_dict={}
     new_dict["Details"]=json_data
     new_dict["Status"]="Processed"
     set_dict_redis(key,new_dict)
     return filename
 
-# def sync_pipeline(filename):
-#     asyncio.run(pipeline(filename))
-#     return filename
-# pipeline("c2.png")
-# print("ran")
-# async def readback(key):
-#     value = await redis.get(key)
-#     print((msgpack.unpackb(value)))
-# asyncio.run(readback("c2"))
-
-# if __name__ == "__main__":
-#     sync_pipeline("copy.png")
-#     asyncio.run(readback("copy"))

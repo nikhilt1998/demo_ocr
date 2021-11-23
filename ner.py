@@ -36,7 +36,7 @@ def createTrainingData(path):
 
   return TRAIN_DATA
 
-model_dir =Path("ner")
+model_dir =Path("ner/ner_states")
 
 def trainNER(TRAIN_DATA,model=None, output_dir=model_dir, n_iter=150):
   if model is not None:
