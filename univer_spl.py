@@ -11,7 +11,7 @@ def beng(text, entities):
   subjects = []
   docx = {}
   docx['UNIVERSITY'] = []
-  docx['SUBJECTS'] = []
+  docx['SUBJECTS'] = {}
   for ent in entities:
     if(ent[1] == 'SUBJECT'):
       subjects.append(ent[0])
@@ -25,9 +25,7 @@ def beng(text, entities):
 
   for i in range(len(subjects)):
     # docx[subjects[i]] = (match[3*(i+1)-2][-1], match[3*(i+1)-1][-2])
-    dd = {}
-    dd[subjects[i]] = {'Theory': match[3*(i+1)-2][-1], 'Internal':match[3*(i+1)-1][-2]}
-    docx['SUBJECTS'].append(dd)
+    docx['SUBJECTS'][subjects[i]] = {'Theory': match[3*(i+1)-2][-1], 'Internal':match[3*(i+1)-1][-2]}
   
   return docx
 
@@ -39,7 +37,7 @@ def vtu(text, entities):
   subjects = []
   docx = {}
   docx['UNIVERSITY'] = []
-  docx['SUBJECTS'] = []
+  docx['SUBJECTS'] = {}
   for ent in entities:
     if(ent[1] == 'SUBJECT'):
       subjects.append(ent[0])
@@ -52,12 +50,10 @@ def vtu(text, entities):
   docx['UNIVERSITY'] = ' '.join(docx['UNIVERSITY'])
   if(len(subjects) == len(match)):
     for i in range(len(match)):
-      dd = {}
       if list(match[i])[-1] == '':
-        dd[subjects[i]] = (match[i][2], match[i][4], match[i][7])
+        docx['SUBJECTS'][subjects[i]] = (match[i][2], match[i][4], match[i][7])
       else:
-        dd[subjects[i]] = (match[i][2], match[i][5], match[i][8])
-    docx['SUBJECTS'].append(dd)   
+        docx['SUBJECTS'][subjects[i]] = (match[i][2], match[i][5], match[i][8])  
 
   return docx
 
