@@ -13,12 +13,11 @@ from univer_spl import get_Grand_total
 from deg_cert import get_dc_details
 from pathlib import Path
 import re
-import jsonify
 import msgpack
 from redis import Redis
 
 model = ocr_predictor(pretrained=True)
-default_dict={"Status":"Processing","Details":{}}
+# default_dict={"Status":"Processing","Details":{}}
 redis = Redis(host="redis")
 
 def set_dict_redis(key,dictionary):
@@ -28,8 +27,8 @@ def get_dict_redis(key):
     value = redis.get(key)
     return (msgpack.unpackb(value))
 
-# def temp(something):
-#     return something
+#def something():
+#    return "pass"
 
 def step1(img_path):
     print("----------------> Step 1")
@@ -129,7 +128,6 @@ def isUniversityCertificate(result):
 
     keywords_university_marksheets = ['university', 'engineering', 'Engineering','(UNIVERSITY', 'management', 'SGPA', 'UNIVERSITY', 'UNIVERSITY,BELAGAVI']
 
-    print(words_list)
 
     if "degree" in (key.lower() for key in words_list) \
     and ("certifies" in (key.lower() for key in words_list) \
@@ -154,7 +152,10 @@ def isUniversityCertificate(result):
 def pipeline(filename):
     print("----------------> Pipeline")
     key=filename.split(".")[0]
-    set_dict_redis(key,default_dict)  
+    image_status = get_dict_redis("image_status")
+    image_status[key]["Status"] = "Processing"
+    set_dict_redis("image_status", image_status)
+
     file = r'uploaded'
     res = step1("uploaded/"+filename)
     
@@ -175,9 +176,14 @@ def pipeline(filename):
         board_name = stateClassification(ent)
         json_data = json_output_board(board_name,ent,filename)
 
-    new_dict={}
-    new_dict["Details"]=json_data
-    new_dict["Status"]="Processed"
-    set_dict_redis(key,new_dict)
+
+    image_status = get_dict_redis("image_status")
+    image_status[key]["Status"] = "Processed"
+    image_status[key]["Details"] = json_data
+    set_dict_redis("image_status", image_status)
+    # new_dict={}
+    # new_dict["Details"]=json_data
+    # new_dict["Status"]="Processed"
+    # set_dict_redis(key,new_dict)
     return filename
 
