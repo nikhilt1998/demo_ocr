@@ -15,4 +15,5 @@ services:
       context: frontend
     image: angular-app
     ports:
-      - 5000:3000
+      - 3000:3000
+  
